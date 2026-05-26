@@ -299,7 +299,7 @@
   /* ── Questions ── */
   .qa-list { display: flex; flex-direction: column; gap: 10px; }
   .qa-item { display: flex; flex-direction: column; gap: 5px; }
-  .qa-row { display: flex; align-items: center; gap: 8px; }
+  .qa-row { display: flex; align-items: flex-start; gap: 8px; }
   .status-dot {
     width: 9px;
     height: 9px;
@@ -321,6 +321,11 @@
     background: var(--surface-secondary);
     outline: none;
     transition: border-color 0.15s, background 0.15s;
+    min-height: 42px;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
+    white-space: pre-wrap;
   }
   .qa-input:focus { border-color: var(--accent); background: var(--surface); }
   .qa-input::placeholder { color: var(--text-tertiary); }
@@ -683,15 +688,21 @@
     item.className = 'qa-item';
     item.innerHTML = `<div class="qa-row">
         <div class="status-dot ${answered ? 'answered' : 'open'}" id="${id}-dot" onclick="toggleQA('${id}')" title="${answered ? 'Answered' : 'Open — click when answered'}"></div>
-        <input type="text" class="qa-input" placeholder="What's your question?" value="${questionText || ''}" oninput="autoSave()">
+        <textarea class="qa-input" rows="1" placeholder="What's your question?" oninput="autoGrow(this); autoSave()">${questionText || ''}</textarea>
         <button class="remove-btn" onclick="this.closest('.qa-item').remove(); autoSave();" aria-label="Remove">×</button>
       </div>
       <div class="qa-answer" id="${id}-ans" style="display:${answered ? 'block' : 'none'}; margin-top:4px;">
         <textarea placeholder="Answer or notes...">${answerText || ''}</textarea>
       </div>`;
     list.appendChild(item);
-    if (!questionText) item.querySelector('.qa-input').focus();
+    const questionInput = item.querySelector('.qa-input');
+    autoGrow(questionInput);
+    if (!questionText) questionInput.focus();
     item.querySelector('.qa-answer textarea').addEventListener('input', autoSave);
+  }
+  function autoGrow(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
   }
   function toggleQA(id) {
     const dot = document.getElementById(id + '-dot');
